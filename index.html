@@ -5,6 +5,152 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Umrah Hangout Ticket Systeem</title>
     <style>
+        /* Password Login Screen Styles */
+        #loginScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        #loginScreen.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .login-box {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 48px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-box h1 {
+            font-size: 1.75rem;
+            color: var(--primary-purple);
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .login-box p {
+            color: var(--text-light);
+            margin-bottom: 32px;
+            font-size: 1rem;
+        }
+
+        .login-form .form-group {
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .login-form label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .login-form input[type="password"] {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #E5E7EB;
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            transition: var(--transition);
+            font-family: inherit;
+            background: var(--white);
+        }
+
+        .login-form input[type="password"]:focus {
+            outline: none;
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary-purple) 0%, var(--secondary-purple) 100%);
+            color: var(--white);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(139, 92, 246, 0.3);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .login-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            padding: 12px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: 1px solid var(--error);
+            display: none;
+        }
+
+        .login-error.show {
+            display: block;
+            animation: shake 0.4s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        #mainApp {
+            display: none;
+        }
+
+        #mainApp.visible {
+            display: block;
+        }
+
+        .login-icon {
+            font-size: 3.5rem;
+            margin-bottom: 16px;
+        }
+
+        /* Original styles below */
         :root {
             --primary-purple: #8B5CF6;
             --secondary-purple: #A78BFA;
@@ -403,7 +549,7 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 6px 12px;
+            padding: 8px 16px;
             border-radius: 20px;
             font-size: 0.875rem;
             font-weight: 600;
@@ -415,9 +561,123 @@
             color: var(--success);
         }
 
+        .connection-status.connecting {
+            background: rgba(243, 156, 18, 0.15);
+            color: var(--orange);
+        }
+
         .connection-status.disconnected {
             background: rgba(239, 68, 68, 0.15);
             color: var(--error);
+        }
+
+        .reconnect-btn {
+            margin-left: 8px;
+            padding: 4px 12px;
+            background: var(--white);
+            border: 1px solid currentColor;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .reconnect-btn:hover {
+            opacity: 0.8;
+        }
+
+        .connection-details {
+            background: var(--white);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 800px;
+            box-shadow: var(--shadow-md);
+            display: none;
+        }
+
+        .connection-details.show {
+            display: block;
+        }
+
+        .connection-details h3 {
+            color: var(--text-dark);
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+
+        .error-details {
+            background: rgba(239, 68, 68, 0.1);
+            padding: 12px;
+            border-radius: var(--radius-sm);
+            margin: 12px 0;
+            border-left: 4px solid var(--error);
+        }
+
+        .error-details p {
+            color: var(--error);
+            font-weight: 600;
+            margin: 0 0 8px 0;
+        }
+
+        .error-details code {
+            display: block;
+            background: rgba(0, 0, 0, 0.05);
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: var(--text-dark);
+            word-break: break-all;
+        }
+
+        .troubleshooting-steps {
+            margin-top: 16px;
+        }
+
+        .troubleshooting-steps h4 {
+            color: var(--text-dark);
+            margin-bottom: 12px;
+            font-size: 1rem;
+        }
+
+        .troubleshooting-steps ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .troubleshooting-steps li {
+            padding: 8px 0;
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .sync-time {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            margin-left: 6px;
+        }
+
+        .manual-sync-btn {
+            padding: 6px 12px;
+            background: var(--primary-purple);
+            color: var(--white);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-left: 10px;
+        }
+
+        .manual-sync-btn:hover {
+            background: var(--dark-purple);
+        }
+
+        .manual-sync-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         .sync-indicator {
@@ -492,14 +752,59 @@
     </style>
 </head>
 <body>
+    <!-- Password Login Screen -->
+    <div id="loginScreen">
+        <div class="login-box">
+            <div class="login-icon">🕌</div>
+            <h1>Umrah Hangout Ticket Systeem</h1>
+            <p>Voer het groepswachtwoord in</p>
+            
+            <div class="login-error" id="loginError">
+                ❌ Onjuist wachtwoord. Probeer opnieuw.
+            </div>
+            
+            <form class="login-form" id="loginForm">
+                <div class="form-group">
+                    <label for="passwordInput">Wachtwoord</label>
+                    <input type="password" id="passwordInput" placeholder="Wachtwoord" required autocomplete="off">
+                </div>
+                <button type="submit" class="login-btn">Toegang verkrijgen</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="mainApp">
     <div class="container">
         <header>
             <h1>🕌 Umrah Hangout Ticket Systeem</h1>
             <p>Beheer en volg al uw hangout activiteiten</p>
-            <div class="connection-status connected" id="connectionStatus">
-                <span>●</span>
-                <span id="connectionText">Verbonden met Google Sheets</span>
+            <div class="connection-status connecting" id="connectionStatus">
+                <span id="connectionIcon">🟡</span>
+                <span id="connectionText">Verbinden...</span>
+                <span class="sync-time" id="syncTime"></span>
+                <button class="reconnect-btn" id="reconnectBtn" style="display: none;">Opnieuw Verbinden</button>
+                <button class="manual-sync-btn" id="manualSyncBtn" style="display: none;">Handmatig Synchroniseren</button>
             </div>
+        </header>
+
+        <div class="connection-details" id="connectionDetails">
+            <h3>⚠️ Verbindingsprobleem</h3>
+            <div class="error-details" id="errorDetails"></div>
+            <div class="troubleshooting-steps">
+                <h4>🔧 Stappen om op te lossen:</h4>
+                <ul>
+                    <li>✓ Ga naar Google Apps Script</li>
+                    <li>✓ Klik op 'Implementeren' → 'Implementaties beheren'</li>
+                    <li>✓ Controleer: 'Wie heeft toegang' = 'Iedereen'</li>
+                    <li>✓ Klik op 'Bijwerken' als je wijzigingen hebt gemaakt</li>
+                    <li>✓ Kopieer de nieuwe URL als deze veranderd is</li>
+                    <li>✓ Controleer of je internetverbinding werkt</li>
+                </ul>
+            </div>
+        </div>
+
+        <header>
         </header>
 
         <div class="stats-grid" id="statsGrid">
@@ -592,6 +897,7 @@
             </div>
         </div>
     </div>
+    </div>
 
     <div class="success-notification" id="successNotification">
         ✓ Ticket succesvol aangemaakt!
@@ -603,16 +909,83 @@
     </div>
 
     <script>
+        // Password Protection Configuration
+        const CORRECT_PASSWORD = 'UmrahGroep101';
+        const AUTH_STORAGE_KEY = 'umrah_authenticated';
+
+        // Check authentication on page load
+        function checkAuthentication() {
+            // Note: Using in-memory check as sessionStorage is not available in sandboxed environment
+            // In production, this would use sessionStorage
+            const isAuthenticated = window.umrahAuthenticated || false;
+            
+            if (isAuthenticated) {
+                showMainApp();
+            } else {
+                showLoginScreen();
+            }
+        }
+
+        // Show login screen
+        function showLoginScreen() {
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('mainApp').classList.remove('visible');
+            document.getElementById('passwordInput').focus();
+        }
+
+        // Show main application
+        function showMainApp() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('mainApp').classList.add('visible');
+            
+            // Initialize the main app after successful login
+            if (!window.appInitialized) {
+                initializeApp();
+                window.appInitialized = true;
+            }
+        }
+
+        // Handle login form submission
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const passwordInput = document.getElementById('passwordInput');
+            const enteredPassword = passwordInput.value;
+            const errorDiv = document.getElementById('loginError');
+            
+            if (enteredPassword === CORRECT_PASSWORD) {
+                // Correct password
+                window.umrahAuthenticated = true;
+                errorDiv.classList.remove('show');
+                passwordInput.value = '';
+                showMainApp();
+            } else {
+                // Wrong password
+                errorDiv.classList.add('show');
+                passwordInput.value = '';
+                passwordInput.focus();
+                
+                // Shake animation and hide error after 3 seconds
+                setTimeout(() => {
+                    errorDiv.classList.remove('show');
+                }, 3000);
+            }
+        });
+
         // Google Sheets Configuration
         const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyF-G54320ocn7UcEXfCThfoDlpJk_ZLVlKplRWh834YW726lvw_nA8XNxcocg0p56d/exec';
         const SYNC_INTERVAL = 30000; // 30 seconds
         const RETRY_ATTEMPTS = 3;
+        const RETRY_DELAYS = [1000, 3000, 5000]; // milliseconds
         const TIMEOUT_MS = 10000;
 
         // Connection state
         let isConnected = false;
         let syncInProgress = false;
         let syncTimer = null;
+        let lastSyncTime = null;
+        let lastError = null;
+        let connectionAttempts = 0;
 
         // Category icons mapping
         const categoryIcons = {
@@ -739,15 +1112,17 @@
             syncToGoogleSheets();
         }
 
-        // Sync tickets to Google Sheets
+        // Sync tickets to Google Sheets with retry logic
         async function syncToGoogleSheets() {
             if (syncInProgress) return;
             
             syncInProgress = true;
             showSyncIndicator('syncing', 'Synchroniseren...');
 
-            let attempts = 0;
-            while (attempts < RETRY_ATTEMPTS) {
+            for (let attempt = 0; attempt < RETRY_ATTEMPTS; attempt++) {
+                connectionAttempts = attempt + 1;
+                updateConnectionStatus('connecting');
+                
                 try {
                     const controller = new AbortController();
                     const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -768,68 +1143,205 @@
                     clearTimeout(timeoutId);
                     
                     // no-cors mode means we can't read the response, but if no error thrown, assume success
-                    updateConnectionStatus(true);
+                    lastSyncTime = Date.now();
+                    lastError = null;
+                    connectionAttempts = 0;
+                    updateConnectionStatus('connected');
                     showSyncIndicator('success', 'Gesynchroniseerd ✓');
                     syncInProgress = false;
                     hideSyncIndicatorAfterDelay();
                     return;
                 } catch (error) {
-                    attempts++;
-                    console.warn(`Sync attempt ${attempts} failed:`, error);
-                    if (attempts >= RETRY_ATTEMPTS) {
-                        updateConnectionStatus(false);
+                    console.warn(`Sync attempt ${attempt + 1} failed:`, error);
+                    lastError = error;
+                    
+                    if (attempt < RETRY_ATTEMPTS - 1) {
+                        // Wait before retrying with exponential backoff
+                        await new Promise(resolve => setTimeout(resolve, RETRY_DELAYS[attempt]));
+                    } else {
+                        // Final attempt failed
+                        const errorInfo = getErrorType(error);
+                        errorInfo.url = GOOGLE_SHEETS_URL;
+                        connectionAttempts = 0;
+                        updateConnectionStatus('disconnected', errorInfo);
                         showSyncIndicator('error', 'Sync mislukt (offline modus)');
                         syncInProgress = false;
                         hideSyncIndicatorAfterDelay();
                         return;
                     }
-                    await new Promise(resolve => setTimeout(resolve, 1000 * attempts));
                 }
             }
         }
 
-        // Load tickets from Google Sheets
+        // Load tickets from Google Sheets with detailed error handling
         async function loadFromGoogleSheets() {
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+            connectionAttempts = 1;
+            updateConnectionStatus('connecting');
+            
+            for (let attempt = 0; attempt < RETRY_ATTEMPTS; attempt++) {
+                connectionAttempts = attempt + 1;
+                
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
-                const response = await fetch(GOOGLE_SHEETS_URL + '?action=get', {
-                    method: 'GET',
-                    mode: 'cors',
-                    signal: controller.signal
-                });
+                    const response = await fetch(GOOGLE_SHEETS_URL + '?action=get', {
+                        method: 'GET',
+                        mode: 'cors',
+                        signal: controller.signal
+                    });
 
-                clearTimeout(timeoutId);
+                    clearTimeout(timeoutId);
 
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.tickets && Array.isArray(data.tickets)) {
-                        tickets = data.tickets;
-                        renderTickets();
-                        updateStatistics();
-                        updateConnectionStatus(true);
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.tickets && Array.isArray(data.tickets)) {
+                            tickets = data.tickets;
+                            renderTickets();
+                            updateStatistics();
+                        }
+                        lastSyncTime = Date.now();
+                        lastError = null;
+                        connectionAttempts = 0;
+                        updateConnectionStatus('connected');
+                        return;
+                    } else {
+                        // Non-OK response
+                        if (attempt < RETRY_ATTEMPTS - 1) {
+                            await new Promise(resolve => setTimeout(resolve, RETRY_DELAYS[attempt]));
+                        } else {
+                            const errorInfo = getErrorType(new Error(`HTTP ${response.status}`), response);
+                            errorInfo.url = GOOGLE_SHEETS_URL;
+                            connectionAttempts = 0;
+                            updateConnectionStatus('disconnected', errorInfo);
+                        }
+                    }
+                } catch (error) {
+                    console.warn(`Load attempt ${attempt + 1} failed:`, error);
+                    lastError = error;
+                    
+                    if (attempt < RETRY_ATTEMPTS - 1) {
+                        await new Promise(resolve => setTimeout(resolve, RETRY_DELAYS[attempt]));
+                    } else {
+                        const errorInfo = getErrorType(error);
+                        errorInfo.url = GOOGLE_SHEETS_URL;
+                        connectionAttempts = 0;
+                        updateConnectionStatus('disconnected', errorInfo);
                     }
                 }
-            } catch (error) {
-                console.warn('Could not load from Google Sheets:', error);
-                updateConnectionStatus(false);
             }
         }
 
         // Update connection status indicator
-        function updateConnectionStatus(connected) {
-            isConnected = connected;
+        function updateConnectionStatus(status, errorInfo = null) {
             const statusEl = document.getElementById('connectionStatus');
             const textEl = document.getElementById('connectionText');
+            const iconEl = document.getElementById('connectionIcon');
+            const syncTimeEl = document.getElementById('syncTime');
+            const reconnectBtn = document.getElementById('reconnectBtn');
+            const manualSyncBtn = document.getElementById('manualSyncBtn');
+            const detailsEl = document.getElementById('connectionDetails');
             
-            if (connected) {
+            if (status === 'connected') {
+                isConnected = true;
                 statusEl.className = 'connection-status connected';
+                iconEl.textContent = '🟢';
                 textEl.textContent = 'Verbonden met Google Sheets';
+                reconnectBtn.style.display = 'none';
+                manualSyncBtn.style.display = 'inline-block';
+                detailsEl.classList.remove('show');
+                
+                if (lastSyncTime) {
+                    const timeStr = new Date(lastSyncTime).toLocaleTimeString('nl-NL', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    syncTimeEl.textContent = `(Laatste sync: ${timeStr})`;
+                }
+            } else if (status === 'connecting') {
+                statusEl.className = 'connection-status connecting';
+                iconEl.textContent = '🟡';
+                textEl.textContent = `Verbinden... (poging ${connectionAttempts}/${RETRY_ATTEMPTS})`;
+                reconnectBtn.style.display = 'none';
+                manualSyncBtn.style.display = 'none';
+                syncTimeEl.textContent = '';
+                detailsEl.classList.remove('show');
             } else {
+                isConnected = false;
                 statusEl.className = 'connection-status disconnected';
+                iconEl.textContent = '🔴';
                 textEl.textContent = 'Offline modus (geen verbinding)';
+                reconnectBtn.style.display = 'inline-block';
+                manualSyncBtn.style.display = 'none';
+                
+                if (lastSyncTime) {
+                    const timeStr = new Date(lastSyncTime).toLocaleTimeString('nl-NL', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    syncTimeEl.textContent = `(Laatste sync: ${timeStr})`;
+                }
+                
+                if (errorInfo) {
+                    showErrorDetails(errorInfo);
+                    detailsEl.classList.add('show');
+                }
             }
+        }
+
+        // Show error details with troubleshooting
+        function showErrorDetails(errorInfo) {
+            const errorDetailsEl = document.getElementById('errorDetails');
+            let errorMessage = '';
+            let technicalDetails = '';
+
+            if (errorInfo.type === 'cors') {
+                errorMessage = 'CORS-fout: Controleer de Apps Script implementatie-instellingen';
+                technicalDetails = 'De Google Apps Script moet toegankelijk zijn voor iedereen. Zorg ervoor dat "Wie heeft toegang" is ingesteld op "Iedereen".';
+            } else if (errorInfo.type === 'network') {
+                errorMessage = 'Netwerkfout: Controleer je internetverbinding';
+                technicalDetails = 'Kan geen verbinding maken met het internet. Controleer je netwerkverbinding en probeer opnieuw.';
+            } else if (errorInfo.type === 'timeout') {
+                errorMessage = 'Time-out: De verbinding duurde te lang';
+                technicalDetails = 'De server reageert niet binnen de verwachte tijd. Dit kan betekenen dat de Google Apps Script traag is of niet reageert.';
+            } else if (errorInfo.type === 'auth') {
+                errorMessage = 'Toegangsfout: Zorg dat de script toegang heeft voor "Iedereen"';
+                technicalDetails = 'De Google Apps Script weigert de toegang. Controleer de implementatie-instellingen.';
+            } else if (errorInfo.type === 'server') {
+                errorMessage = 'Serverfout: Probleem met Google Apps Script';
+                technicalDetails = `HTTP ${errorInfo.status}: De server heeft een fout teruggegeven.`;
+            } else {
+                errorMessage = 'Onbekende fout: Probeer opnieuw';
+                technicalDetails = errorInfo.message || 'Er is een onverwachte fout opgetreden.';
+            }
+
+            errorDetailsEl.innerHTML = `
+                <p>${errorMessage}</p>
+                <code>${technicalDetails}</code>
+                ${errorInfo.url ? `<code style="margin-top: 8px;">URL: ${errorInfo.url}</code>` : ''}
+            `;
+        }
+
+        // Get error type from error object
+        function getErrorType(error, response = null) {
+            if (error.name === 'AbortError') {
+                return { type: 'timeout', message: error.message };
+            }
+            if (error.message.includes('CORS') || error.message.includes('cors')) {
+                return { type: 'cors', message: error.message };
+            }
+            if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                return { type: 'network', message: error.message };
+            }
+            if (response) {
+                if (response.status === 403 || response.status === 401) {
+                    return { type: 'auth', status: response.status, message: `HTTP ${response.status}` };
+                }
+                if (response.status >= 500) {
+                    return { type: 'server', status: response.status, message: `HTTP ${response.status}` };
+                }
+            }
+            return { type: 'unknown', message: error.message };
         }
 
         // Show sync indicator
@@ -983,6 +1495,25 @@
             return div.innerHTML;
         }
 
+        // Reconnect button handler
+        document.getElementById('reconnectBtn').addEventListener('click', async function() {
+            this.disabled = true;
+            this.textContent = 'Verbinden...';
+            await loadFromGoogleSheets();
+            this.disabled = false;
+            this.textContent = 'Opnieuw Verbinden';
+        });
+
+        // Manual sync button handler
+        document.getElementById('manualSyncBtn').addEventListener('click', async function() {
+            this.disabled = true;
+            const originalText = this.textContent;
+            this.textContent = 'Synchroniseren...';
+            await syncToGoogleSheets();
+            this.disabled = false;
+            this.textContent = originalText;
+        });
+
         // Initialize application
         function initializeApp() {
             loadTicketsFromStorage();
@@ -992,8 +1523,8 @@
             startAutoSync();
         }
 
-        // Initialize on page load
-        initializeApp();
+        // Check authentication and initialize on page load
+        checkAuthentication();
     </script>
 </body>
 </html>
